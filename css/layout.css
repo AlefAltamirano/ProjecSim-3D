@@ -1,0 +1,180 @@
+/* ═══════════════════════════════════════════════════
+   LAYOUT.CSS — Structural grid, app shell
+   ═══════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+/* ── HEADER ── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 1.25rem;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+/* ── MAIN ── */
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr var(--panel-w);
+  grid-template-rows: 1fr;
+  gap: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── SCENE SECTION ── */
+.scene-section {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+
+.scene-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#three-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── CONTROL PANEL (RIGHT) ── */
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.625rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.control-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.control-panel::-webkit-scrollbar-track { background: transparent; }
+.control-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── PANEL CARDS ── */
+.panel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.card-body {
+  padding: 0.6rem 0.75rem;
+}
+
+/* ── ACTIONS BAR ── */
+.panel-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0 0.5rem 0;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* ── OVERLAYS ── */
+.scene-overlay-tl {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  pointer-events: none;
+}
+
+.scene-overlay-br {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.scene-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+
+/* ── ENERGY OVERLAY ── */
+.energy-overlay {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  background: rgba(10, 15, 26, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  z-index: 20;
+}
+
+.energy-overlay.hidden { display: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) {
+  :root { --panel-w: 300px; }
+}
+
+@media (max-width: 900px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55vh 1fr;
+  }
+  .control-panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  body { overflow: auto; }
+  html, body { height: auto; }
+}

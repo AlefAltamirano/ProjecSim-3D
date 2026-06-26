@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProjecSim 3D — Simulador de Proyectiles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Import map for Three.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="header-brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 20 Q8 5 18 3" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="18" cy="3" r="2" fill="var(--accent)"/>
+        <circle cx="3" cy="20" r="1.5" fill="var(--text-secondary)"/>
+      </svg>
+      <span class="brand-name">ProjecSim<span class="brand-suffix"> 3D</span></span>
+      <span class="brand-version">v2.0</span>
+    </div>
+    <div class="header-meta">
+      <span class="meta-chip" id="status-chip">
+        <span class="status-dot idle"></span>
+        INACTIVO
+      </span>
+      <span class="meta-chip">
+        <span class="chip-icon">⏱</span>
+        <span id="header-time">t = 0.000 s</span>
+      </span>
+      <span class="meta-chip">
+        <span class="chip-icon">📍</span>
+        <span id="header-pos">x = 0.0 m</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════════
+       MAIN LAYOUT
+  ════════════════════════════════════════════════ -->
+  <main class="app-main">
+
+    <!-- LEFT: 3D SCENE -->
+    <section class="scene-section">
+      <div id="scene-container" class="scene-container">
+        <canvas id="three-canvas"></canvas>
+        <!-- Overlay badges -->
+        <div class="scene-overlay-tl">
+          <span class="overlay-badge">WebGL · Three.js r158</span>
+        </div>
+        <div class="scene-overlay-br" id="fps-counter">60 FPS</div>
+        <!-- Camera controls hint -->
+        <div class="scene-hint" id="scene-hint">
+          🖱 Arrastrar: rotar · Scroll: zoom · Clic derecho: desplazar
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: CONTROL PANEL -->
+    <aside class="control-panel">
+
+      <!-- ── PARAMETERS ── -->
+      <div class="panel-card" id="card-params">
+        <div class="card-header">
+          <span class="card-title">Parámetros</span>
+          <span class="card-icon">⚙</span>
+        </div>
+        <div class="card-body params-grid">
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">θ</span>
+              <span class="param-name">Ángulo</span>
+            </label>
+            <input type="range" id="sl-angle" min="1" max="89" value="45" step="0.5" class="sci-slider" />
+            <input type="number" id="in-angle" min="1" max="89" value="45" step="0.5" class="sci-input" />
+            <span class="param-unit">°</span>
+          </div>
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">v₀</span>
+              <span class="param-name">Velocidad</span>
+            </label>
+            <input type="range" id="sl-speed" min="1" max="100" value="30" step="0.5" class="sci-slider" />
+            <input type="number" id="in-speed" min="1" max="100" value="30" step="0.5" class="sci-input" />
+            <span class="param-unit">m/s</span>
+          </div>
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">y₀</span>
+              <span class="param-name">Altura ini.</span>
+            </label>
+            <input type="range" id="sl-height" min="0" max="50" value="0" step="0.5" class="sci-slider" />
+            <input type="number" id="in-height" min="0" max="50" value="0" step="0.5" class="sci-input" />
+            <span class="param-unit">m</span>
+          </div>
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">g</span>
+              <span class="param-name">Gravedad</span>
+            </label>
+            <input type="range" id="sl-gravity" min="0.1" max="25" value="9.81" step="0.01" class="sci-slider" />
+            <input type="number" id="in-gravity" min="0.1" max="25" value="9.81" step="0.01" class="sci-input" />
+            <span class="param-unit">m/s²</span>
+          </div>
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">γ</span>
+              <span class="param-name">Rozamiento</span>
+            </label>
+            <input type="range" id="sl-drag" min="0" max="0.5" value="0" step="0.001" class="sci-slider" />
+            <input type="number" id="in-drag" min="0" max="0.5" value="0" step="0.001" class="sci-input" />
+            <span class="param-unit">kg/s</span>
+          </div>
+
+          <div class="param-row">
+            <label class="param-label">
+              <span class="param-symbol">×</span>
+              <span class="param-name">Velocidad sim.</span>
+            </label>
+            <input type="range" id="sl-simspeed" min="0.1" max="5" value="1" step="0.1" class="sci-slider" />
+            <input type="number" id="in-simspeed" min="0.1" max="5" value="1" step="0.1" class="sci-input" />
+            <span class="param-unit">×</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PREDICTION ── -->
+      <div class="panel-card" id="card-prediction">
+        <div class="card-header">
+          <span class="card-title">Predicción Teórica</span>
+          <span class="card-icon">📐</span>
+        </div>
+        <div class="card-body prediction-grid">
+          <div class="pred-item">
+            <span class="pred-label">Altura máx.</span>
+            <span class="pred-value" id="pred-hmax">— m</span>
+          </div>
+          <div class="pred-item">
+            <span class="pred-label">Tiempo vuelo</span>
+            <span class="pred-value" id="pred-tof">— s</span>
+          </div>
+          <div class="pred-item">
+            <span class="pred-label">Alcance</span>
+            <span class="pred-value" id="pred-range">— m</span>
+          </div>
+          <div class="pred-item">
+            <span class="pred-label">Vel. impacto</span>
+            <span class="pred-value" id="pred-vimp">— m/s</span>
+          </div>
+          <div class="pred-item">
+            <span class="pred-label">E. cinética ini.</span>
+            <span class="pred-value" id="pred-ek">— J</span>
+          </div>
+          <div class="pred-item">
+            <span class="pred-label">E. potencial ini.</span>
+            <span class="pred-value" id="pred-ep">— J</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TELEMETRY ── -->
+      <div class="panel-card" id="card-telemetry">
+        <div class="card-header">
+          <span class="card-title">Telemetría</span>
+          <span class="card-icon">📡</span>
+        </div>
+        <div class="card-body telemetry-grid">
+          <div class="telem-row">
+            <span class="telem-label">t</span>
+            <div class="telem-bar-wrap"><div class="telem-bar" id="bar-t"></div></div>
+            <span class="telem-value mono" id="tel-t">0.000 s</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">x</span>
+            <div class="telem-bar-wrap"><div class="telem-bar" id="bar-x"></div></div>
+            <span class="telem-value mono" id="tel-x">0.00 m</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">y</span>
+            <div class="telem-bar-wrap"><div class="telem-bar" id="bar-y"></div></div>
+            <span class="telem-value mono" id="tel-y">0.00 m</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">vₓ</span>
+            <div class="telem-bar-wrap"><div class="telem-bar accent" id="bar-vx"></div></div>
+            <span class="telem-value mono" id="tel-vx">0.00 m/s</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">vy</span>
+            <div class="telem-bar-wrap"><div class="telem-bar accent" id="bar-vy"></div></div>
+            <span class="telem-value mono" id="tel-vy">0.00 m/s</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">|v|</span>
+            <div class="telem-bar-wrap"><div class="telem-bar green" id="bar-v"></div></div>
+            <span class="telem-value mono" id="tel-v">0.00 m/s</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">Ek</span>
+            <div class="telem-bar-wrap"><div class="telem-bar yellow" id="bar-ek"></div></div>
+            <span class="telem-value mono" id="tel-ek">0.00 J</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">Ep</span>
+            <div class="telem-bar-wrap"><div class="telem-bar blue" id="bar-ep"></div></div>
+            <span class="telem-value mono" id="tel-ep">0.00 J</span>
+          </div>
+          <div class="telem-row">
+            <span class="telem-label">Em</span>
+            <div class="telem-bar-wrap"><div class="telem-bar purple" id="bar-em"></div></div>
+            <span class="telem-value mono" id="tel-em">0.00 J</span>
+          </div>
+          <div class="telem-row highlight">
+            <span class="telem-label">y_max</span>
+            <div class="telem-bar-wrap"><div class="telem-bar orange" id="bar-ymax"></div></div>
+            <span class="telem-value mono" id="tel-ymax">0.00 m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VISUALIZATION OPTIONS ── -->
+      <div class="panel-card" id="card-viz">
+        <div class="card-header">
+          <span class="card-title">Visualización</span>
+          <span class="card-icon">👁</span>
+        </div>
+        <div class="card-body viz-grid">
+          <label class="viz-toggle" data-key="grid">
+            <input type="checkbox" id="viz-grid" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Cuadrícula</span>
+          </label>
+          <label class="viz-toggle" data-key="trajectory">
+            <input type="checkbox" id="viz-trajectory" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Trayectoria</span>
+          </label>
+          <label class="viz-toggle" data-key="velocity">
+            <input type="checkbox" id="viz-velocity" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Vector v</span>
+          </label>
+          <label class="viz-toggle" data-key="vx">
+            <input type="checkbox" id="viz-vx" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Vector vₓ</span>
+          </label>
+          <label class="viz-toggle" data-key="vy">
+            <input type="checkbox" id="viz-vy" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Vector vy</span>
+          </label>
+          <label class="viz-toggle" data-key="projX">
+            <input type="checkbox" id="viz-projX" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Proy. horiz.</span>
+          </label>
+          <label class="viz-toggle" data-key="projY">
+            <input type="checkbox" id="viz-projY" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Proy. vert.</span>
+          </label>
+          <label class="viz-toggle" data-key="apogee">
+            <input type="checkbox" id="viz-apogee" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Altura máx.</span>
+          </label>
+          <label class="viz-toggle" data-key="impact">
+            <input type="checkbox" id="viz-impact" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Punto impacto</span>
+          </label>
+          <label class="viz-toggle" data-key="energy">
+            <input type="checkbox" id="viz-energy" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span>Barras energía</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── ACTIONS ── -->
+      <div class="panel-actions">
+        <button id="btn-fire" class="btn-primary">
+          <span class="btn-icon">🚀</span> DISPARAR
+        </button>
+        <button id="btn-reset" class="btn-secondary">
+          <span class="btn-icon">↺</span> REINICIAR
+        </button>
+        <button id="btn-target" class="btn-tertiary" title="Colocar objetivo">
+          <span class="btn-icon">🎯</span>
+        </button>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ════════════════════════════════════════════════
+       ENERGY BAR OVERLAY (activable)
+  ════════════════════════════════════════════════ -->
+  <div id="energy-overlay" class="energy-overlay hidden">
+    <div class="energy-bar-group">
+      <div class="ebar-label">Ek</div>
+      <div class="ebar-track"><div class="ebar-fill ek" id="ebar-ek"></div></div>
+    </div>
+    <div class="energy-bar-group">
+      <div class="ebar-label">Ep</div>
+      <div class="ebar-track"><div class="ebar-fill ep" id="ebar-ep"></div></div>
+    </div>
+    <div class="energy-bar-group">
+      <div class="ebar-label">Em</div>
+      <div class="ebar-track"><div class="ebar-fill em" id="ebar-em"></div></div>
+    </div>
+  </div>
+
+  <!-- Entry script -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
